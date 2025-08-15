@@ -10,7 +10,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class MessageBase(BaseModel):
     content: str
@@ -23,4 +23,4 @@ class MessageResponse(MessageBase):
     timestamp: datetime
     senser: UserResponse
     class Config:
-        orm_mode = True
+        from_attributes = True

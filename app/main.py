@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from .db import engine, Base
-from . import websocket
+from . import websocket, chat
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -15,4 +15,4 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Live Chat API", lifespan=lifespan)
 
 app.include_router(websocket.router)
-
+app.include_router(chat.router)

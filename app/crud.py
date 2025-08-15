@@ -12,3 +12,19 @@ async def create_user(db: AsyncSession, user: schemas.UserCreate):
 async def get_user_by_username(db: AsyncSession, username: str):
     result = await db.execute(select(models.User).where(models.User.username == username))
     return result.scalars().first()
+
+async def create_message(db: AsyncSession, message: schemas.MessageCreate):
+    db_message = models.Message(
+        content = message.content,
+        sender_id = message.sender_id
+    )
+    db.add(db_message)
+    await db.commit()
+    await db.refresh(db_message)
+    return db_message
+
+async def get_chat_history(db: AsyncSession, limit: int = 50):
+    result = await db.execute(
+        select(models.Message).order_by(models.Message.timestamp.desc()).limit(limit)
+    )
+    return result.scalars().all()
