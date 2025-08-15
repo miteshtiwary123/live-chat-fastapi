@@ -28,3 +28,17 @@ async def get_chat_history(db: AsyncSession, limit: int = 50):
         select(models.Message).order_by(models.Message.timestamp.desc()).limit(limit)
     )
     return result.scalars().all()
+
+async def update_message_status(db: AsyncSession, message_id: int, delivered: bool = None, read: bool = None):
+    result = await db.execute(select(models.Message).where(models.Message.id == message_id))
+    msg = result.scalars().first()
+    if not msg:
+        return None
+    if delivered is not None:
+        msg.delivered = delivered
+    if read is not None:
+        msg.read = read
+
+    await db.commit()
+    await db.refresh(msg)
+    return msg

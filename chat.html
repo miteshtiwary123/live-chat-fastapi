@@ -9,6 +9,7 @@
         .msg { margin: 5px 0; }
         .self { color: blue; }
         .other { color: green; }
+        .system { color: gray; font-style: italic; }
     </style>
 </head>
 <body>
@@ -39,8 +40,14 @@
         ws.onmessage = (event) => {
             try {
                 const msg = JSON.parse(event.data);
-                const cls = (msg.sender_id == senderIdInput.value) ? "self" : "other";
-                appendMessage(`${msg.sender_id}: ${msg.content}`, cls);
+                if (msg.type === "message") {
+                    const cls = (msg.sender_id == senderIdInput.value) ? "self" : "other";
+                    appendMessage(`${msg.sender_id}: ${msg.content}`, cls);
+                } else if (msg.type === "typing") {
+                    appendMessage(`User ${msg.user_id} is typing...`, "system");
+                } else if (msg.type === "status_update") {
+                    appendMessage(`Message ${msg.message_id} status updated (Delivered: ${msg.delivered}, Read: ${msg.read})`, "system");
+                }
             } catch (e) {
                 appendMessage(`Raw: ${event.data}`, "system");
             }
@@ -57,6 +64,8 @@
         messageInput.addEventListener("keypress", (e) => {
             if (e.key === "Enter") {
                 sendMessage();
+            } else {
+                sendTyping();
             }
         });
 
@@ -64,12 +73,21 @@
             const content = messageInput.value.trim();
             if (content) {
                 const payload = {
+                    type: "message",
                     sender_id: parseInt(senderIdInput.value),
                     content: content
                 };
                 ws.send(JSON.stringify(payload));
                 messageInput.value = "";
             }
+        }
+
+        function sendTyping() {
+            const payload = {
+                type: "typing",
+                user_id: parseInt(senderIdInput.value)
+            };
+            ws.send(JSON.stringify(payload));
         }
 
         function appendMessage(text, cls) {
@@ -82,4 +100,3 @@
     </script>
 </body>
 </html>
-
